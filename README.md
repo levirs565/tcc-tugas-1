@@ -38,7 +38,7 @@ sudo systemctl restart ssh.socket
 Install Git:
 
 ```
-sudo dnf install git
+sudo apt install git
 ```
 
 ## VM2
@@ -54,7 +54,7 @@ sudo nmcli connection add type ethernet con-name enp0s8 ifname enp0s8 autoconnec
 Install Git:
 
 ```
-sudo apt install git
+sudo dnf install git
 ```
 
 Now you can connect to VM with SSH.
