@@ -1,0 +1,11 @@
+gitea.local {
+    reverse_proxy gitea:3000
+}
+
+beszel.local {
+    reverse_proxy beszel:8090
+}
+
+vikunja.local {
+    reverse_proxy vikunja:3456
+}

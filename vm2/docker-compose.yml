@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_PASSWORD: tugastcc
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+  seaweedfs:
+    image: chrislusf/seaweedfs:4.19
+    restart: unless-stopped
+    ports:
+      - "9333:9333" # Master port
+      - "8080:8080" # Filer port
+      - "8333:8333" # S3 port
+    volumes:
+      - ./swfs_data:/data
+      - ./s3.json:/etc/seaweedfs/s3.json:ro
+    command: "server -dir=/data -s3 -s3.config=/etc/seaweedfs/s3.json -filer"
+  nfs-server:
+    image: erichough/nfs-server
+    ports:
+      - "2049:2049"
+    volumes:
+      - ./nfs_share:/nfs_share
+      - ./nfs-exports.conf:/etc/exports:ro
+      - /lib/modules:/lib/modules:ro
+    environment:
+      - NFS_VERSION=4
+    cap_add:
+      - SYS_ADMIN
+      - SYS_MODULE
+    restart: unless-stopped
+  beszel-agent:
+    image: henrygd/beszel-agent
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./beszel_agent_data:/var/lib/beszel-agent
+      # monitor other disks / partitions by mounting a folder in /extra-filesystems
+      # - /mnt/disk/.beszel:/extra-filesystems/sda1:ro
+    environment:
+      LISTEN: 45876
+      KEY: x
+      TOKEN: x
+      HUB_URL: http://192.168.56.10:8090

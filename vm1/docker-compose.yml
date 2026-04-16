@@ -1,0 +1,90 @@
+volumes:
+  caddy_data:
+  caddy_config:
+  gitea_repos:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=192.168.56.9,rw,nfsvers=4,nolock,hard,timeo=30
+      device: ":/gitea_repos"
+  vikunja_files:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=192.168.56.9,rw,nfsvers=4,nolock,hard,timeo=30
+      device: ":/vikunja_files"
+
+services:
+  caddy:
+    image: caddy:2.11.2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./conf:/etc/caddy
+      - ./site:/srv
+      - caddy_data:/data
+      - caddy_config:/config
+  gitea:
+    image: docker.gitea.com/gitea:1.25.5
+    container_name: gitea
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__server__ROOT_URL=https://gitea.local/
+      - GITEA__database__DB_TYPE=postgres
+      - GITEA__database__HOST=192.168.56.9:5432
+      - GITEA__database__NAME=giteadb
+      - GITEA__database__USER=gitea
+      - GITEA__database__PASSWD=giteatcc
+      - GITEA__storage__STORAGE_TYPE=minio
+      - GITEA__storage__MINIO_ENDPOINT=192.168.56.9:8333
+      - GITEA__storage__MINIO_ACCESS_KEY_ID=gitea
+      - GITEA__storage__MINIO_SECRET_ACCESS_KEY=giteatcc
+      - GITEA__storage__MINIO_BUCKET=gitea
+      - GITEA__storage__MINIO_LOCATION=us-east-1
+    restart: unless-stopped
+    volumes:
+      - gitea_repos:/data/git/repositories
+      - ./gitea:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "192.168.56.11:22:22"
+  vikunja:
+    image: vikunja/vikunja:2.3.0
+    environment:
+      VIKUNJA_SERVICE_PUBLICURL: https://vikunja.local
+      VIKUNJA_DATABASE_HOST: 192.168.56.9:5432
+      VIKUNJA_DATABASE_PASSWORD: vikunjatcc
+      VIKUNJA_DATABASE_TYPE: postgres
+      VIKUNJA_DATABASE_USER: vikunja
+      VIKUNJA_DATABASE_DATABASE: vikunjadb
+      VIKUNJA_SERVICE_JWTSECRET: vikunja secret rahasia
+    volumes:
+      - vikunja_files:/app/vikunja/files
+    restart: unless-stopped
+  beszel:
+    image: henrygd/beszel:0.18.7
+    restart: unless-stopped
+    ports:
+      - "192.168.56.10:8090:8090"
+    volumes:
+      - ./beszel_data:/beszel_data
+      - ./beszel_socket:/beszel_socket
+  beszel-agent:
+    image: henrygd/beszel-agent:0.18.7
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./beszel_agent_data:/var/lib/beszel-agent
+      # monitor other disks / partitions by mounting a folder in /extra-filesystems
+      # - /mnt/disk/.beszel:/extra-filesystems/sda1:ro
+    environment:
+      LISTEN: 45876
+      KEY: x
+      TOKEN: x
+      HUB_URL: http://192.168.56.10:8090

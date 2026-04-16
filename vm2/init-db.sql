@@ -1,0 +1,7 @@
+CREATE USER gitea WITH PASSWORD 'giteatcc';
+CREATE DATABASE giteadb OWNER gitea;
+GRANT ALL PRIVILEGES ON DATABASE giteadb TO gitea;
+
+CREATE USER vikunja WITH PASSWORD 'vikunjatcc';
+CREATE DATABASE vikunjadb OWNER vikunja;
+GRANT ALL PRIVILEGES ON DATABASE vikunjadb TO vikunja;

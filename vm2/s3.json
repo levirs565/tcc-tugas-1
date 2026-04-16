@@ -1,0 +1,14 @@
+{
+  "identities": [
+    {
+      "name": "gitea",
+      "credentials": [
+        {
+          "accessKey": "gitea",
+          "secretKey": "giteatcc"
+        }
+      ],
+      "actions": ["Read", "Write", "List", "Tagging", "Admin"]
+    }
+  ]
+}
