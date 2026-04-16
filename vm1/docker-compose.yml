@@ -85,6 +85,6 @@ services:
       # - /mnt/disk/.beszel:/extra-filesystems/sda1:ro
     environment:
       LISTEN: 45876
-      KEY: x
-      TOKEN: x
+      KEY: ${BESZEL_KEY}
+      TOKEN: ${BESZEL_TOKEN}
       HUB_URL: http://192.168.56.10:8090
