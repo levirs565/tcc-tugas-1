@@ -62,10 +62,14 @@ Now you can connect to VM with SSH.
 Create directory for NFS:
 
 ```
-mkdir vm2/nfs_share/gitea_repos
-mkdir vm2/nfs_share/vikunja_files
+mkdir -p vm2/nfs_share/gitea_repos
+mkdir -p vm2/nfs_share/vikunja_files
 ```
 
 ## Starting Service
 
 Start service using Docker Compose.
+
+## Hosts
+
+Edit ` C:\Windows\System32\drivers\etc\hosts`
